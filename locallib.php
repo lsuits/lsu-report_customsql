@@ -384,6 +384,23 @@ function report_customsql_pretify_column_names($row) {
 }
 
 /**
+ * Returns a list of custom placeholders and their banned words.
+ * @return array $customcodes an array of placeholders and their associated banned words.
+ */
+function report_customsql_customcodes() {
+    global $CFG;
+    $customcodes = array();
+    $customcodepairs = !empty($CFG->report_customsql_badwordsexception) ? explode(":",$CFG->report_customsql_badwordsexception) : null;
+    if ($customcodepairs) {
+        foreach ($customcodepairs as $customcodepair) {
+            $ccp = explode(',',$customcodepair);
+            $customcodes[$ccp[0]] = $ccp[1];
+        }
+    }
+    return $customcodes;
+}
+
+/**
  * Writes a CSV row and replaces placeholders.
  * @param resource $handle the file pointer
  * @param array $data a data row
@@ -391,11 +408,17 @@ function report_customsql_pretify_column_names($row) {
 function report_customsql_write_csv_row($handle, $data) {
     global $CFG;
     $escapeddata = array();
+    $customcodes = report_customsql_customcodes();
     foreach ($data as $value) {
         $value = str_replace('%%WWWROOT%%', $CFG->wwwroot, $value);
         $value = str_replace('%%Q%%', '?', $value);
         $value = str_replace('%%C%%', ':', $value);
         $value = str_replace('%%S%%', ';', $value);
+        if ($customcodes) {
+            array_walk_recursive($customcodes, function ($item, $key) use (& $value) {
+                $value = str_replace('%%' . $key . '%%', $item, $value);
+            });
+        }
         $escapeddata[] = '"'.str_replace('"', '""', $value).'"';
     }
     fwrite($handle, implode(',', $escapeddata)."\r\n");
