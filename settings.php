@@ -29,4 +29,8 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('report_customsql_maxresults',
             get_string('maxresults', 'report_customsql'),
             get_string('maxresults_help', 'report_customsql'), '5000'));
+
+    $settings->add(new admin_setting_configtext('report_customsql_badwordsexception',
+            get_string('badwords', 'report_customsql'),
+            get_string('badwords_help', 'report_customsql'), ''));
 }

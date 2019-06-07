@@ -80,6 +80,13 @@ class report_customsql_edit_form extends moodleform {
         end($capabilityoptions);
         $mform->setDefault('capability', key($capabilityoptions));
 
+        // Add the form fields for further limiting report access per individual report.
+        $mform->addElement('text', 'userlimit', get_string('userlimit', 'report_customsql'));
+        $mform->setType('userlimit', PARAM_NOTAGS);
+        $mform->setDefault('userlimit', NULL);
+        $mform->disabledIf('userlimit', 'capability', 'neq', 'report/customsql:view');
+        $mform->addHelpButton('userlimit', 'userlimit', 'report_customsql');
+
         $querylimit = report_customsql_limitnum();
 
         $mform->addElement('text', 'querylimit', get_string('querylimit', 'report_customsql'));
@@ -100,6 +107,9 @@ class report_customsql_edit_form extends moodleform {
 
         $mform->addElement('checkbox', 'singlerow', get_string('typeofresult', 'report_customsql'),
                            get_string('onerow', 'report_customsql'));
+
+        $mform->addElement('advcheckbox', 'donotescape', get_string('donotescape', 'report_customsql'), null, array(0,1));
+        $mform->disabledIf('donotescape', 'runable', 'ne', 'daily');
 
         $mform->addElement('text', 'customdir', get_string('customdir', 'report_customsql'), 'size = 70');
         $mform->setType('customdir', PARAM_PATH);

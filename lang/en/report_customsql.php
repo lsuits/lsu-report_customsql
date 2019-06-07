@@ -61,6 +61,7 @@ $string['description'] = 'Description';
 $string['displayname'] = 'Query name';
 $string['displaynamex'] = 'Query name: {$a}';
 $string['displaynamerequired'] = 'You must enter a query name';
+$string['donotescape'] = 'Do not escape the output of this query when saved via CLI';
 $string['downloadthisreportascsv'] = 'Download these results as CSV';
 $string['edit'] = 'Add/Edit';
 $string['editcategory'] = 'Update category';
@@ -121,7 +122,7 @@ $string['querynote'] = '<ul>
 <li>You can put parameters into the SQL using named placeholders, for example <tt>:parameter_name</tt>. Then, when the report is run, the user can enter values for the parameters to use when running the query.</li>
 <li>If the <tt>:parameter_name</tt> starts or ends with the characters <tt>date</tt> then a date-time selector will be used to input that value, otherwise a plain text-box will be used.</li>
 <li>You cannot use the characters <tt>:</tt>, <tt>;</tt> or <tt>?</tt> in strings in your query. If you need them, you can use the tokens <tt>%%C%%</tt>, <tt>%%S%%</tt> and <tt>%%Q%%</tt> respectively.</li>
-<li>You cannot use the word <tt>"create"</tt> in your query. If you need to use this in the select area, you can use the token <tt>%%M%%</tt>.</li>
+<li>Any other custom exceptions to the prohibited word policy must be defined in the administrative settings of the report.</li>
 </ul>';
 $string['queryparameters'] = 'Query parameters';
 $string['queryparams'] = 'Please enter default values for the query parameters.';
@@ -154,3 +155,8 @@ $string['maxresults'] = 'Maximum results';
 $string['maxresults_help'] = 'The maximum number of results returned. If unlimited results is selected, this value becomes the default max per query.';
 $string['reportlimit'] = 'report';
 $string['adminlimit'] = 'administrative';
+$string['badwords'] = 'Exceptions to prohibited words';
+$string['badwords_help'] = 'Here you can add a colon (:) separated list of key,value pairs of exceptions to the banned words list and their "%%X%%" code where "X" is the letter you choose in the key,value pair. These banned words include ALTER, CREATE, DELETE, DROP, GRANT, INSERT, INTO, TRUNCATE, and UPDATE. These are independent of case. <br />Please make note of whatever case you might need in your results and the case of your code. To return these words in your query results, use the appropriate "%%X%%" code in place of the banned word.<br />Example: Entering the key,value pair of <strong>M,update:I,create</strong> will allow you to use <strong>%%M%%</strong> to return <strong>"update"</strong> and <strong>%%I%%</strong> to return <strong>"create"</strong> in your query results.';
+$string['userlimit'] = 'Limit to these users';
+$string['userlimit_help'] = 'Add a comma seperated list of moodle usernames. Case must match the Moodle username. Leave empty for no additional limits. Example: user1,user2,user3';
+$string['noaccess'] = 'You are not allowed to view this report. Please contact your report administrator for assistance.';

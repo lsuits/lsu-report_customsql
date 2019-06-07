@@ -103,10 +103,13 @@ function report_customsql_generate_csv($report, $timenow) {
         $querylimit = !empty($report->querylimit) ? $report->querylimit : $limitnum;
     }
 
+    $donotescape = isset($report->donotescape) ? $report->donotescape : 0;
+
     $rs = report_customsql_execute_query($sql, $queryparams, $querylimit);
 
     $csvfilenames = array();
     $csvtimestamp = null;
+
     foreach ($rs as $row) {
         if (!$csvtimestamp) {
             list($csvfilename, $csvtimestamp) = report_customsql_csv_filename($report, $timenow);
@@ -114,7 +117,7 @@ function report_customsql_generate_csv($report, $timenow) {
 
             if (!file_exists($csvfilename)) {
                 $handle = fopen($csvfilename, 'w');
-                report_customsql_start_csv($handle, $row, $report->singlerow);
+                report_customsql_start_csv($handle, $row, $report->singlerow, $donotescape);
             } else {
                 $handle = fopen($csvfilename, 'a');
             }
@@ -130,7 +133,7 @@ function report_customsql_generate_csv($report, $timenow) {
         if ($report->singlerow) {
             array_unshift($data, strftime('%Y-%m-%d', $timenow));
         }
-        report_customsql_write_csv_row($handle, $data);
+        report_customsql_write_csv_row($handle, $data, $donotescape);
     }
     $rs->close();
 
@@ -384,29 +387,61 @@ function report_customsql_pretify_column_names($row) {
 }
 
 /**
+ * Returns a list of custom placeholders and their banned words.
+ * @return array $customcodes an array of placeholders and their associated banned words.
+ */
+function report_customsql_customcodes() {
+    global $CFG;
+    $customcodes = array();
+    $customcodepairs = !empty($CFG->report_customsql_badwordsexception) ? explode(":",$CFG->report_customsql_badwordsexception) : null;
+    if ($customcodepairs) {
+        foreach ($customcodepairs as $customcodepair) {
+            $ccp = explode(',',$customcodepair);
+            $customcodes[$ccp[0]] = $ccp[1];
+        }
+    }
+    return $customcodes;
+}
+
+/**
  * Writes a CSV row and replaces placeholders.
  * @param resource $handle the file pointer
  * @param array $data a data row
  */
-function report_customsql_write_csv_row($handle, $data) {
+function report_customsql_write_csv_row($handle, $data, $donotescape) {
     global $CFG;
+
     $escapeddata = array();
+    $customcodes = report_customsql_customcodes();
     foreach ($data as $value) {
         $value = str_replace('%%WWWROOT%%', $CFG->wwwroot, $value);
         $value = str_replace('%%Q%%', '?', $value);
         $value = str_replace('%%C%%', ':', $value);
         $value = str_replace('%%S%%', ';', $value);
-        $escapeddata[] = '"'.str_replace('"', '""', $value).'"';
+        if ($customcodes) {
+            array_walk_recursive($customcodes, function ($item, $key) use (& $value) {
+                $value = str_replace('%%' . $key . '%%', $item, $value);
+            });
+        }
+
+        // For XML and other specific outputs.
+        // TODO: Do not leave this like this. This is an LSU specific change. Figure out a report specific way to handle this.
+
+        if (php_sapi_name() === 'cli' && $donotescape) {
+            $escapeddata[] = $value;
+        } else {
+            $escapeddata[] = '"' . str_replace('"', '""', $value) . '"';
+        }
     }
     fwrite($handle, implode(',', $escapeddata)."\r\n");
 }
 
-function report_customsql_start_csv($handle, $firstrow, $datecol) {
+function report_customsql_start_csv($handle, $firstrow, $datecol, $donotescape) {
     $colnames = report_customsql_pretify_column_names($firstrow);
     if ($datecol) {
         array_unshift($colnames, get_string('queryrundate', 'report_customsql'));
     }
-    report_customsql_write_csv_row($handle, $colnames);
+    report_customsql_write_csv_row($handle, $colnames, $donotescape);
 }
 
 /**
@@ -666,6 +701,8 @@ function report_customsql_send_email_notification($recipient, $message) {
  * @return boolean
  */
 function report_customsql_is_daily_report_ready($report, $timenow) {
+return true;
+/*
     // Time when the report should run today.
     list($runtimetoday) = report_customsql_get_daily_time_starts($timenow, $report->at);
 
@@ -677,6 +714,7 @@ function report_customsql_is_daily_report_ready($report, $timenow) {
         return true;
     }
     return false;
+*/
 }
 
 function report_customsql_category_options() {

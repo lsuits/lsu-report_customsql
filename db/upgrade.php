@@ -173,5 +173,33 @@ function xmldb_report_customsql_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2016011800, 'report', 'customsql');
     }
 
+    // Add the database column for further limiting report access.
+    if ($oldversion < 2018041601) {
+
+        // Define field userlimit to be added to report_customsql_queries.
+        $table = new xmldb_table('report_customsql_queries');
+        $field = new xmldb_field('userlimit', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'customdir');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2018041601, 'report', 'customsql');
+    }
+
+    // Add the ability to avoid escaping the output for XML, JSON and other specific formats.
+    if ($oldversion < 2019060600) {
+        require_once($CFG->dirroot . '/report/customsql/locallib.php');
+        $table = new xmldb_table('report_customsql_queries');
+        $field = new xmldb_field('donotescape', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED,
+                XMLDB_NOTNULL, null, '0', 'queryparams');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2019060600, 'report', 'customsql');
+    }
+
     return true;
 }
