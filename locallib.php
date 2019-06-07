@@ -701,8 +701,6 @@ function report_customsql_send_email_notification($recipient, $message) {
  * @return boolean
  */
 function report_customsql_is_daily_report_ready($report, $timenow) {
-return true;
-/*
     // Time when the report should run today.
     list($runtimetoday) = report_customsql_get_daily_time_starts($timenow, $report->at);
 
@@ -714,7 +712,6 @@ return true;
         return true;
     }
     return false;
-*/
 }
 
 function report_customsql_category_options() {
